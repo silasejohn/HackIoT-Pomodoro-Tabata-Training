@@ -144,7 +144,17 @@ void loop () {
     Serial.print(future.second(), DEC);
     Serial.println();
 
-    if (future.second() % 15 == 0){
+    /*if (future.second() % 15 == 0){
+      for (int thisNote = 0; thisNote < size; thisNote++) {
+        // pin8 output the voice, every scale is 0.5 sencond
+        tone(11, melody[thisNote], dur[thisNote] * 100);
+        // Output the voice after several minutes
+        delay(dur[thisNote]*200);
+        //delay(250);
+      }
+    }*/
+
+    if (future.hour() == hour && future.minute() == minute && future.second() == second){
       for (int thisNote = 0; thisNote < size; thisNote++) {
         // pin8 output the voice, every scale is 0.5 sencond
         tone(11, melody[thisNote], dur[thisNote] * 100);
