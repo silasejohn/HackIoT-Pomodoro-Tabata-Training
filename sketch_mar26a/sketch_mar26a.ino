@@ -71,6 +71,10 @@ void loop ()
     Serial.print(':');
     Serial.print(future.second(), DEC);
     Serial.println();
+
+    if (future.second() % 5 == 0){
+      Serial.println("WOWOWOWOW");
+    }
     
     Serial.println();
     delay(1000);
