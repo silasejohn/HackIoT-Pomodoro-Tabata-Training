@@ -124,37 +124,36 @@ void setup ()
   alarm_init();
 }
 
+int past_sec = 0;
+bool alarming = false;
+
 void loop () {
     DateTime now = rtc.now();
 
     // calculate a date which is 7 days & 30 seconds into the future
     DateTime future (now - TimeSpan(1,-9,10,30));
-    
-    //Serial.println("Future Date & Time (Now + 7days & 30s): ");
-    Serial.print(future.year(), DEC);
-    Serial.print('/');
-    Serial.print(future.month(), DEC);
-    Serial.print('/');
-    Serial.print(future.day(), DEC);
-    Serial.print(' ');
-    Serial.print(future.hour(), DEC);
-    Serial.print(':');
-    Serial.print(future.minute(), DEC);
-    Serial.print(':');
-    Serial.print(future.second(), DEC);
-    Serial.println();
 
-    /*if (future.second() % 15 == 0){
-      for (int thisNote = 0; thisNote < size; thisNote++) {
-        // pin8 output the voice, every scale is 0.5 sencond
-        tone(11, melody[thisNote], dur[thisNote] * 100);
-        // Output the voice after several minutes
-        delay(dur[thisNote]*200);
-        //delay(250);
-      }
-    }*/
+    if (past_sec != future.second()){
+      //Serial.println("Future Date & Time (Now + 7days & 30s): ");
+      Serial.print(future.year(), DEC);
+      Serial.print('/');
+      Serial.print(future.month(), DEC);
+      Serial.print('/');
+      Serial.print(future.day(), DEC);
+      Serial.print(' ');
+      Serial.print(future.hour(), DEC);
+      Serial.print(':');
+      Serial.print(future.minute(), DEC);
+      Serial.print(':');
+      Serial.print(future.second(), DEC);
+      Serial.println();
+      past_sec = future.second();
+    }
 
-    if (future.hour() == hour && future.minute() == minute && future.second() == second){
+    if ((future.second() + 60 - second) % 15 == 0 && alarming){
+      Serial.println();
+      Serial.println("ALARM!!");
+      Serial.println();
       for (int thisNote = 0; thisNote < size; thisNote++) {
         // pin8 output the voice, every scale is 0.5 sencond
         tone(11, melody[thisNote], dur[thisNote] * 100);
@@ -163,8 +162,10 @@ void loop () {
         //delay(250);
       }
     }
-    
-    Serial.println();
+
+    if (future.hour() == hour && future.minute() == minute && future.second() == second){
+      alarming = true;
+    }
 /*
     char customKey = customKeypad.getKey();
   
