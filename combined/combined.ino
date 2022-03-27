@@ -46,6 +46,21 @@ Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS
 String password = "ABC123";
 String input = "";*/
 
+// Pulse Sensor
+
+#define USE_ARDUINO_INTERRUPTS true    // Set-up low-level interrupts for most acurate BPM math.
+#include <PulseSensorPlayground.h>     // Includes the PulseSensorPlayground Library.   
+
+//  Variables
+const int PulseWire = 0;       // PulseSensor PURPLE WIRE connected to ANALOG PIN 0
+const int LED13 = 13;          // The on-board Arduino LED, close to PIN 13.
+int Threshold = 550;           // Determine which Signal to "count as a beat" and which to ignore.
+                               // Use the "Gettting Started Project" to fine-tune Threshold Value beyond default setting.
+                               // Otherwise leave the default "550" value. 
+                               
+PulseSensorPlayground pulseSensor;  // Creates an instance of the PulseSensorPlayground object called "pulseSensor"
+
+
 
 int hour = 0;
 int minute = 0;
@@ -121,11 +136,22 @@ void setup ()
     // rtc.adjust(DateTime(2017, 1, 27, 12, 56, 0));
   }
 
+  // Configure the PulseSensor object, by assigning our variables to it. 
+  pulseSensor.analogInput(PulseWire);   
+  pulseSensor.blinkOnPulse(LED13);       //auto-magically blink Arduino's LED with heartbeat.
+  pulseSensor.setThreshold(Threshold);   
+
+  // Double-check the "pulseSensor" object was created and "began" seeing a signal. 
+   if (pulseSensor.begin()) {
+    Serial.println("We created a pulseSensor Object !");  //This prints one time at Arduino power-up,  or on Arduino reset.  
+  }
+
   alarm_init();
 }
 
 int past_sec = 0;
 bool alarming = false;
+int bpm_count = 0;
 
 void loop () {
     DateTime now = rtc.now();
@@ -150,7 +176,7 @@ void loop () {
       past_sec = future.second();
     }
 
-    if ((future.second() + 60 - second) % 15 == 0 && alarming){
+    if (alarming && (future.second() + 60 - second) % 15 == 0){
       Serial.println();
       Serial.println("ALARM!!");
       Serial.println();
@@ -166,6 +192,27 @@ void loop () {
     if (future.hour() == hour && future.minute() == minute && future.second() == second){
       alarming = true;
     }
+
+    int myBPM = pulseSensor.getBeatsPerMinute();  // Calls function on our pulseSensor object that returns BPM as an "int".
+                                               // "myBPM" hold this BPM value now. 
+
+    if (pulseSensor.sawStartOfBeat() && alarming) {            // Constantly test to see if "a beat happened". 
+      Serial.println("♥  A HeartBeat Happened ! "); // If test is "true", print a message "a heartbeat happened".
+      Serial.print("BPM: ");                        // Print phrase "BPM: " 
+      Serial.println(myBPM);                        // Print the value inside of myBPM. 
+      if (myBPM > 70){
+        bpm_count++;
+      }
+      else {
+        bpm_count = 0;
+      }
+    }
+
+    if (bpm_count > 10){
+      alarming = false;
+    }
+
+    delay(20);                    // considered best practice in a simple sketch.
 /*
     char customKey = customKeypad.getKey();
   
